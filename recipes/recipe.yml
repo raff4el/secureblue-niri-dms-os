@@ -6,7 +6,7 @@ name: secureblue-niri-dms-os
 description: This is my personal OS image.
 
 # the base image to build on top of (FROM) and the version tag to use
-base-image: ghcr.io/secureblue/silverblue-nvidia-open-hardened
+base-image: ghcr.io/secureblue/silverblue-main-hardened
 image-version: 44 # latest is also supported if you want new updates ASAP
 
 # module configuration, executed in order
@@ -78,7 +78,4 @@ modules:
         - Roboto
         - Open Sans
         - Inter
-  - type: chezmoi
-    repository: https://github.com/paysis/chezmoi-repo.git
-    file-conflict-policy: skip
   - type: signing # this sets up the proper policy & signing files for signed images to work fully
