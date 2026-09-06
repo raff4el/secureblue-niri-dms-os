@@ -271,3 +271,5 @@ binds {
         spawn "dms" "ipc" "call" "brightness" "decrement" "5" "";
     }
 }
+
+include optional=true "~/.config/niri/local.kdl"
