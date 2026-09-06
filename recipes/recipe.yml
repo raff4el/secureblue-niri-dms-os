@@ -38,6 +38,8 @@ modules:
         - dgop
         - dsearch
         - alacritty
+        - wl-clipboard
+        - cliphist
   - type: systemd
     system:
       enabled:
