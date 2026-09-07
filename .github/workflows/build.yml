@@ -4,11 +4,17 @@ on:
     - cron:
         "30 06 * * *" # build at 06:30 UTC every day
         # (30 minutes after last secureblue images start building)
+        #
+        # NOTE: GitHub does not deliver `schedule` events to forked
+        # repositories. If this repo is still a fork, detach it
+        # (Settings -> General -> Leave fork network) or this never fires.
   push:
     paths-ignore: # don't rebuild if only documentation has changed
       - "**.md"
 
   pull_request:
+    paths-ignore:
+      - "**.md"
   workflow_dispatch: # allow manually triggering builds
 concurrency:
   # only run one build at a time

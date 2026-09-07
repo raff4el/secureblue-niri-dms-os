@@ -3,14 +3,16 @@
 # image will be published to ghcr.io/<user>/<name>
 name: secureblue-niri-dms-os
 # description will be included in the image's metadata
-description: This is my personal OS image.
+description: secureblue (hardened Fedora Atomic) with niri + DankMaterialShell.
 
 # the base image to build on top of (FROM) and the version tag to use
 base-image: ghcr.io/secureblue/silverblue-main-hardened
+# NOTE: when bumping this, also bump every `chroot:` under the dnf module below.
+# The COPRs are pinned to a Fedora release and will silently install stale
+# packages (or fail) if the two drift apart.
 image-version: 44 # latest is also supported if you want new updates ASAP
 
 # module configuration, executed in order
-# you can include multiple instances of the same module
 modules:
   - type: files
     files:
@@ -19,27 +21,75 @@ modules:
 
   - type: dnf
     repos:
+      # `cleanup` removes these COPRs from the finished image, so they are used
+      # at build time only and are not left behind as trusted package sources
+      # for runtime `rpm-ostree install`. Set to false if you want to layer
+      # packages from them on a running system.
+      cleanup: true
       copr:
+        # NOTE: chroots are pinned because the secureblue base reports an OS
+        # version that COPR cannot map automatically. Keep in sync with
+        # `image-version` above. x86_64 only -- add aarch64 chroots here first
+        # if you ever build for arm64.
         - name: atim/starship
           chroot: fedora-44-x86_64
-        - name: avengemedia/dms-git
+        # Stable DMS releases. `avengemedia/dms-git` also exists and tracks
+        # DankMaterialShell master with automatic rebuilds -- combined with the
+        # daily image build that ships an untested upstream commit every day.
+        - name: avengemedia/dms
           chroot: fedora-44-x86_64
         - name: avengemedia/danklinux
           chroot: fedora-44-x86_64
     install:
+      # niri Recommends waybar, fuzzel, swaylock and xwayland-satellite, all of
+      # which are either redundant with DMS or (in Xwayland's case) reintroduce
+      # X11, which secureblue's DE criteria explicitly want to be disableable.
+      # Weak deps are off, so anything actually needed is listed explicitly.
+      install-weak-deps: false
       packages:
-        - starship
-        - nu
+        # Shell / compositor
         - niri
         - dms
+        # `quickshell` is pinned explicitly: dms requires
+        # `(quickshell or quickshell-git)` and the danklinux COPR ships both,
+        # so without this dnf is free to pull the git snapshot.
+        - quickshell
+        - dgop
+        # The package is named danksearch; it only ships /usr/bin/dsearch.
+        # Asking for `dsearch` relies on dnf file-provides resolution.
+        - danksearch
         - dms-greeter
         - greetd
         - greetd-selinux
-        - dgop
-        - dsearch
+        # Formerly weak deps of dms that we do want: dynamic theming, media
+        # backend for the shell's players, and the audio visualiser.
+        - matugen
+        - qt6-qtmultimedia
+        - cava
+        # Formerly weak deps of niri that we do want: portals for screencast
+        # and file chooser, secrets, audio session manager.
+        - xdg-desktop-portal-gnome
+        - xdg-desktop-portal-gtk
+        - gnome-keyring
+        - wireplumber
+        # Fonts backing the DMS defaults ("Inter Variable" / "Fira Code").
+        # The nerd-fonts and google-fonts modules below register different
+        # family names ("FiraCode Nerd Font", "Inter"), so these are needed for
+        # the shell to render in its intended typeface rather than a fallback.
+        - rsms-inter-fonts
+        - fira-code-fonts
+        # Userland
+        - starship
+        - nu
         - alacritty
         - wl-clipboard
         - cliphist
+    # gdm is disabled below but still installed. Removing it is possible and
+    # would shrink the image, but it is the change most likely to break the
+    # build against a future base image, so it is opt-in:
+    # remove:
+    #   packages:
+    #     - gdm
   - type: systemd
     system:
       enabled:

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "customManagers": [
+    {
+      "description": "Track the secureblue base image tag in recipe.yml",
+      "customType": "regex",
+      "managerFilePatterns": ["/^recipes/.+\\.ya?ml$/"],
+      "matchStrings": [
+        "base-image:\\s*(?<depName>\\S+)[\\s\\S]*?image-version:\\s*(?<currentValue>\\d+)"
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "loose"
+    },
+    {
+      "description": "Flag COPR chroots so they get bumped alongside image-version",
+      "customType": "regex",
+      "managerFilePatterns": ["/^recipes/.+\\.ya?ml$/"],
+      "matchStrings": ["chroot:\\s*fedora-(?<currentValue>\\d+)-\\w+"],
+      "depNameTemplate": "fedora",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "loose"
+    }
+  ]
+}

@@ -1,5 +1,10 @@
 // System default for raff4el secureblue Niri + DMS.
-// Personal overrides belong in ~/.config/niri/config.kdl.
+// Personal overrides belong in ~/.config/niri/config.kdl, or -- to keep these
+// defaults and only add to them -- in ~/.config/niri/local.kdl (see the include
+// at the bottom of this file).
+//
+// Note: xwayland-satellite is deliberately not installed, so X11-only clients
+// will not start. See the security notes in the repo README.
 
 input {
     keyboard {
@@ -272,4 +277,9 @@ binds {
     }
 }
 
+// Per-user overrides layered on top of these system defaults.
+//
+// Requires niri >= 25.11 for `include`, and >= 26.04 for `~` expansion.
+// Fedora 44 ships 26.04, so this is fine -- but a parse error here means no
+// desktop at all, so re-check this line when changing the base image version.
 include optional=true "~/.config/niri/local.kdl"
